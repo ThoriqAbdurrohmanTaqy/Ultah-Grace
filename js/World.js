@@ -9,17 +9,9 @@ class World {
         this.floatingTexts = [];
         this.lanterns = [];
         this.setupEnvironment();
-        this.init();
     }
 
-    init() {
-        this.createGround();
-        this.createTrees();
-        this.createStreetLights();
-        this.createCake();
-        this.createMading();
-        this.createFloatingTexts();
-    }
+
 
     setupEnvironment() {
         // Fog & Background
