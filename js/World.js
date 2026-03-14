@@ -193,6 +193,40 @@ class World {
         this.scene.add(g);
     }
 
+    createTelescope() {
+        const group = new THREE.Group();
+
+        // Tripod (3 legs)
+        const legGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 4);
+        const legMat = new THREE.MeshLambertMaterial({ color: 0x3d1f0a });
+        for (let i = 0; i < 3; i++) {
+            const leg = new THREE.Mesh(legGeo, legMat);
+            leg.rotation.z = 0.3;
+            leg.rotation.y = (i * Math.PI * 2) / 3;
+            leg.position.y = 0.5;
+            group.add(leg);
+        }
+
+        // Mount
+        const mount = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), new THREE.MeshLambertMaterial({ color: 0x555555 }));
+        mount.position.y = 1.1;
+        group.add(mount);
+
+        // Tube
+        const tubeGeo = new THREE.CylinderGeometry(0.08, 0.12, 1.5, 12);
+        const tubeMat = new THREE.MeshLambertMaterial({ color: 0xcfb53b, emissive: 0xcfb53b, emissiveIntensity: 0.1 });
+        const tube = new THREE.Mesh(tubeGeo, tubeMat);
+        tube.rotation.x = -Math.PI / 2.5; // Points Up
+        tube.position.y = 1.3;
+        tube.position.z = 0.1;
+        group.add(tube);
+
+        group.position.set(-4, 0, 2);
+        group.lookAt(0, 0, 0);
+        this.scene.add(group);
+        this.telescope = group;
+    }
+
     createFloatingTexts() {
         const texts = [
             "I Love You ❤️",

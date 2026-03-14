@@ -270,6 +270,38 @@
       transform: scale(1.05);
     }
 
+    /* Telescope Lens Overlay */
+    #telescope-lens {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.95) 75%);
+      z-index: 50;
+      display: none;
+      pointer-events: none;
+      border: 4px solid rgba(207, 181, 59, 0.4);
+      border-radius: 50%;
+      margin: auto;
+      width: 80vh;
+      height: 80vh;
+      animation: irisIn 0.8s ease-out;
+    }
+
+    #telescope-lens.visible {
+      display: block;
+    }
+
+    @keyframes irisIn {
+      from {
+        transform: scale(3);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
     .heart-float {
       position: fixed;
       font-size: 1.1rem;
@@ -555,6 +587,7 @@
 
 <body>
   <div id="canvas-container"></div>
+  <div id="telescope-lens"></div>
   <div id="hud">
     <div id="title-banner">
       <h1>Dunia Kecil untuk Grace</h1>
@@ -642,28 +675,41 @@
     let lineIdx = 0;
 
     window.addEventListener('keydown', e => {
+      const game = window.game;
       if (e.key.toLowerCase() === 'e') {
-        const game = window.game;
+        // Priority 0: Close Telescope
+        if (game.isTelescopeActive) {
+          toggleTelescope(false);
+          return;
+        }
+
         // Priority 1: Closing overlays
         if (game.isOverlayVisible) {
           toggleBirthdayOverlay(false);
           toggleMadingOverlay(false);
+          closePolaroid();
           return;
         }
 
-        // Priority 2: Mading
+        // Priority 2: Telescope
+        if (game.isNearTelescope) {
+          toggleTelescope(true);
+          return;
+        }
+
+        // Priority 3: Mading
         if (game.isNearMading) {
           toggleMadingOverlay(true);
           return;
         }
 
-        // Priority 3: Wedding Cake / Surprise
+        // Priority 4: Wedding Cake / Surprise
         if (game.isNearCake) {
           toggleBirthdayOverlay(true);
           return;
         }
 
-        // Priority 4: Talk to Thoriq
+        // Priority 5: Talk to Thoriq
         if (game.isNearThoriq) {
           const text = npcLines[lineIdx % npcLines.length];
           document.getElementById('npc-text').textContent = text;
@@ -677,6 +723,8 @@
       if (e.key === 'Escape') {
         toggleBirthdayOverlay(false);
         toggleMadingOverlay(false);
+        toggleTelescope(false);
+        closePolaroid();
       }
     });
 
@@ -746,6 +794,19 @@
 
     document.getElementById('send-btn').onclick = sendMessage;
     document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); e.stopPropagation(); };
+
+    function toggleTelescope(show) {
+      const game = window.game;
+      game.isTelescopeActive = show;
+      const lens = document.getElementById('telescope-lens');
+      if (show) {
+        lens.classList.add('visible');
+        document.getElementById('hud').style.opacity = '0.3';
+      } else {
+        lens.classList.remove('visible');
+        document.getElementById('hud').style.opacity = '1';
+      }
+    }
 
     // Photo Mode Functionality
     function takePhoto() {

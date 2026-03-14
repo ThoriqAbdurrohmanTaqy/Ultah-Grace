@@ -8,8 +8,10 @@ class Engine {
         this.isNearThoriq = false;
         this.isNearCake = false;
         this.isNearMading = false;
+        this.isNearTelescope = false;
         this.isOverlayVisible = false;
-        this.curYaw = Math.PI; // Track current rotation for smoothing
+        this.isTelescopeActive = false;
+        this.curYaw = Math.PI;
         this.musicStarted = false;
 
         this.initThree();
@@ -176,6 +178,20 @@ class Engine {
     }
 
     updateCamera() {
+        if (this.isTelescopeActive) {
+            // Telescope View: Locked on sky, zoomed in
+            this.camera.fov = 30; // Zoom in
+            this.camera.updateProjectionMatrix();
+
+            this.camera.position.set(this.player.pos.x - 0.5, this.player.pos.y + 1.8, this.player.pos.z + 0.5);
+            const lukAt = new THREE.Vector3(this.player.pos.x, this.player.pos.y + 10, this.player.pos.z);
+            this.camera.lookAt(lukAt);
+            return;
+        }
+
+        this.camera.fov = 65; // Normal View
+        this.camera.updateProjectionMatrix();
+
         // Keyboard Camera Rotation (Arrow Keys)
         const rotSpeed = 0.03;
         if (this.keys['arrowleft']) this.camState.angleH -= rotSpeed;
@@ -219,6 +235,12 @@ class Engine {
         const distM = Math.sqrt(dxM * dxM + dzM * dzM);
         this.isNearMading = distM < 2.0;
 
+        // Distance to Telescope (-4, 0, 2)
+        const dxTe = this.player.pos.x - (-4);
+        const dzTe = this.player.pos.z - 2;
+        const distTe = Math.sqrt(dxTe * dxTe + dzTe * dzTe);
+        this.isNearTelescope = distTe < 2.0;
+
         const prompt = document.getElementById('interact-prompt');
 
         if (this.isNearThoriq) {
@@ -233,6 +255,10 @@ class Engine {
             this.ringMat.opacity = 0;
         } else if (this.isNearMading) {
             prompt.innerHTML = 'Tekan <b>E</b> untuk melihat Mading Poto 🖼️';
+            prompt.classList.add('visible');
+            this.ringMat.opacity = 0;
+        } else if (this.isNearTelescope) {
+            prompt.innerHTML = this.isTelescopeActive ? 'Klik kiri atau tekan <b>E</b> untuk berhenti' : 'Tekan <b>E</b> untuk melihat Langit 🔭';
             prompt.classList.add('visible');
             this.ringMat.opacity = 0;
         } else {
