@@ -377,6 +377,84 @@
         opacity: 1;
       }
     }
+
+    /* Mading Gallery Overlay */
+    #mading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 6, 18, 0.96);
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(20px);
+      transition: all 0.5s ease;
+    }
+
+    #mading-overlay.visible {
+      display: flex;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    #mading-content {
+      display: flex;
+      gap: 40px;
+      max-width: 90vw;
+      overflow-x: auto;
+      padding: 60px 20px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: #f9d4e8 rgba(255, 255, 255, 0.05);
+    }
+
+    #mading-content::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    #mading-content::-webkit-scrollbar-thumb {
+      background: #f9d4e8;
+      border-radius: 3px;
+    }
+
+    .mading-item {
+      flex: 0 0 auto;
+      width: clamp(280px, 40vw, 450px);
+      aspect-ratio: 3/4;
+      background: #110a18;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(249, 180, 220, 0.2);
+      scroll-snap-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .mading-item img,
+    .mading-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mading-close {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      color: #f9d4e8;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 10px 20px;
+      border: 1px solid rgba(249, 180, 220, 0.3);
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      transition: 0.3s;
+    }
+
+    .mading-close:hover {
+      background: rgba(249, 180, 220, 0.1);
+      transform: scale(1.05);
+    }
   </style>
 </head>
 
@@ -395,11 +473,18 @@
         <div class="key">A</div>
         <div class="key">S</div>
         <div class="key">D</div>
-        <div class="hint-label">Gerak</div>
+        <div class="hint-label">Jalan</div>
       </div>
       <div class="hint-row">
-        <div class="key" style="width:52px">🖱 Drag</div>
+        <div class="key">↑</div>
+        <div class="key">←</div>
+        <div class="key">↓</div>
+        <div class="key">→</div>
         <div class="hint-label">Kamera</div>
+      </div>
+      <div class="hint-row">
+        <div class="key">E</div>
+        <div class="hint-label">Interaksi</div>
       </div>
     </div>
 
@@ -419,7 +504,14 @@
 
   <div id="birthday-overlay">
     <img src="birthday_world_grace.svg" alt="Birthday Card">
-    <div id="close-hint">Tekan <b>E</b> untuk kembali ke dunia</div>
+    <div id="close-hint">Tekan <b>E</b> untuk kembali</div>
+  </div>
+
+  <div id="mading-overlay">
+    <div class="mading-close" onclick="toggleMadingOverlay(false)">TUTUP (ESC)</div>
+    <div id="mading-content"></div>
+    <p style="margin-top:20px; color:rgba(249,212,232,0.4); font-size:0.75rem; letter-spacing:3px;">GESER UNTUK MELIHAT
+      MEMORI KITA</p>
   </div>
 
   <!-- Libraries -->
@@ -444,19 +536,27 @@
 
     window.addEventListener('keydown', e => {
       if (e.key.toLowerCase() === 'e') {
-        // Priority 1: Closing the overlay
+        const game = window.game;
+        // Priority 1: Closing overlays
         if (game.isOverlayVisible) {
           toggleBirthdayOverlay(false);
+          toggleMadingOverlay(false);
           return;
         }
 
-        // Priority 2: Opening the overlay near cake
+        // Priority 2: Mading
+        if (game.isNearMading) {
+          toggleMadingOverlay(true);
+          return;
+        }
+
+        // Priority 3: Wedding Cake / Surprise
         if (game.isNearCake) {
           toggleBirthdayOverlay(true);
           return;
         }
 
-        // Priority 3: Talk to Thoriq
+        // Priority 4: Talk to Thoriq
         if (game.isNearThoriq) {
           const text = npcLines[lineIdx % npcLines.length];
           document.getElementById('npc-text').textContent = text;
@@ -466,14 +566,51 @@
           game.world.spawnHeart(0, 1.6);
         }
       }
+
+      if (e.key === 'Escape') {
+        toggleBirthdayOverlay(false);
+        toggleMadingOverlay(false);
+      }
     });
 
     function toggleBirthdayOverlay(show) {
+      const game = window.game;
       game.isOverlayVisible = show;
       const overlay = document.getElementById('birthday-overlay');
       if (show) {
         overlay.classList.add('visible');
-        game.world.spawnHeart(0, 0); // Spawn hearts at cake
+        game.world.spawnHeart(0, 0);
+      } else {
+        overlay.classList.remove('visible');
+      }
+    }
+
+    function toggleMadingOverlay(show) {
+      const game = window.game;
+      game.isOverlayVisible = show;
+      const overlay = document.getElementById('mading-overlay');
+      const content = document.getElementById('mading-content');
+
+      if (show) {
+        const files = [
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.32.jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.33 (1).jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.33.jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.34 (1).jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.34.jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.35.jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.42 (1).jpeg' },
+          { type: 'img', src: 'Poto/WhatsApp Image 2026-03-14 at 21.43.42.jpeg' },
+          { type: 'vid', src: 'Poto/WhatsApp Video 2026-03-14 at 21.43.42.mp4' }
+        ];
+
+        content.innerHTML = files.map(f => `
+          <div class="mading-item">
+            ${f.type === 'img' ? `<img src="${f.src}">` : `<video src="${f.src}" controls autoplay loop></video>`}
+          </div>
+        `).join('');
+
+        overlay.classList.add('visible');
       } else {
         overlay.classList.remove('visible');
       }

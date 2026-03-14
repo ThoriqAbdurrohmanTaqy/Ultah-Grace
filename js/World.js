@@ -162,45 +162,32 @@ class World {
     }
 
     createMading() {
-        // Create a gallery path/wall
-        const files = [
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.32.jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.33 (1).jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.33.jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.34 (1).jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.34.jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.35.jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.42 (1).jpeg",
-            "Poto/WhatsApp Image 2026-03-14 at 21.43.42.jpeg"
-        ];
+        // Create a single Mading Stand near the cake
+        const g = new THREE.Group();
 
-        const loader = new THREE.TextureLoader();
-        const radius = 25; // Bigger radius for peripheral gallery
-        files.forEach((file, i) => {
-            const angle = (i / files.length) * Math.PI * 0.8 - Math.PI * 0.4; // Semi circle
-            const x = Math.sin(angle) * radius;
-            const z = -Math.cos(angle) * radius - 10;
+        // Pole/Stand
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.8, 8), new THREE.MeshLambertMaterial({ color: 0x5a3010 }));
+        pole.position.y = 0.9;
+        g.add(pole);
 
-            const frameGeo = new THREE.BoxGeometry(3.5, 4.5, 0.15);
-            const frameMat = new THREE.MeshLambertMaterial({
-                color: 0x2a1035,
-                emissive: 0xff85c0,
-                emissiveIntensity: 0.1 // Subtle glow to find it in the dark
-            });
-            const frame = new THREE.Mesh(frameGeo, frameMat);
+        // Board Frame
+        const frameGeo = new THREE.BoxGeometry(2.5, 1.8, 0.2);
+        const frameMat = new THREE.MeshLambertMaterial({ color: 0x2a1035, emissive: 0xff85c0, emissiveIntensity: 0.1 });
+        const frame = new THREE.Mesh(frameGeo, frameMat);
+        frame.position.y = 2.0;
+        g.add(frame);
 
-            const photoGeo = new THREE.PlaneGeometry(3.2, 4.2);
-            loader.load(file, (tex) => {
-                const photoMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
-                const photo = new THREE.Mesh(photoGeo, photoMat);
-                photo.position.z = 0.1;
-                frame.add(photo);
-            });
+        // "Mading" Label or Icon on the board
+        const labelGeo = new THREE.PlaneGeometry(2.2, 1.5);
+        // Just a placeholder look for the board before opening
+        const labelMat = new THREE.MeshBasicMaterial({ color: 0x3d1f40, side: THREE.DoubleSide });
+        const label = new THREE.Mesh(labelGeo, labelMat);
+        label.position.z = 0.12;
+        frame.add(label);
 
-            frame.position.set(x, 2.8, z);
-            frame.lookAt(0, 2.8, 0);
-            this.scene.add(frame);
-        });
+        g.position.set(2.5, 0, 0);
+        g.lookAt(0, 0, 0); // Face the center/cake
+        this.scene.add(g);
     }
 
     createFloatingTexts() {

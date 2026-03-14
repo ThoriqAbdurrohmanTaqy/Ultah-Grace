@@ -7,6 +7,7 @@ class Engine {
         this.keys = {};
         this.isNearThoriq = false;
         this.isNearCake = false;
+        this.isNearMading = false;
         this.isOverlayVisible = false;
         this.curYaw = Math.PI; // Track current rotation for smoothing
         this.musicStarted = false;
@@ -98,7 +99,8 @@ class Engine {
         });
         window.addEventListener('mouseup', () => isDragging = false);
         container.addEventListener('wheel', e => {
-            this.camState.distance = Math.max(2, Math.min(12, this.camState.distance + e.deltaY * 0.01));
+            this.camera.zoom = Math.max(0.5, Math.min(2.0, (this.camera.zoom || 1.0) - e.deltaY * 0.001));
+            this.camera.updateProjectionMatrix();
         }, { passive: true });
 
         window.addEventListener('resize', () => {
@@ -174,13 +176,23 @@ class Engine {
     }
 
     updateCamera() {
+        // Keyboard Camera Rotation (Arrow Keys)
+        const rotSpeed = 0.03;
+        if (this.keys['arrowleft']) this.camState.angleH -= rotSpeed;
+        if (this.keys['arrowright']) this.camState.angleH += rotSpeed;
+        if (this.keys['arrowup']) this.camState.angleV -= rotSpeed;
+        if (this.keys['arrowdown']) this.camState.angleV += rotSpeed;
+
+        // Vertical Limit: Allow looking higher at the sky
+        this.camState.angleV = Math.max(-1.1, Math.min(1.2, this.camState.angleV));
+
         // Smooth interpolation
         this.camState.smoothH += (this.camState.angleH - this.camState.smoothH) * 0.15;
         this.camState.smoothV += (this.camState.angleV - this.camState.smoothV) * 0.15;
 
         const dist = this.camState.distance;
         const camX = this.player.pos.x + dist * Math.sin(this.camState.smoothH) * Math.cos(this.camState.smoothV);
-        const camY = this.player.pos.y + 1.6 + dist * Math.sin(this.camState.smoothV);
+        const camY = this.player.pos.y + 1.6 + dist * Math.sin(this.camState.smoothV) * 1.5; // Emphasize vertical for sky
         const camZ = this.player.pos.z + dist * Math.cos(this.camState.smoothH) * Math.cos(this.camState.smoothV);
 
         this.camera.position.set(camX, camY, camZ);
@@ -201,17 +213,26 @@ class Engine {
         const distC = Math.sqrt(dxC * dxC + dzC * dzC);
         this.isNearCake = distC < 2.0;
 
+        // Distance to Mading (2, 0, 0)
+        const dxM = this.player.pos.x - 2.5;
+        const dzM = this.player.pos.z - 0;
+        const distM = Math.sqrt(dxM * dxM + dzM * dzM);
+        this.isNearMading = distM < 2.0;
+
         const prompt = document.getElementById('interact-prompt');
 
         if (this.isNearThoriq) {
             prompt.innerHTML = 'Tekan <b>E</b> untuk menyapa Thoriq 💌';
             prompt.classList.add('visible');
             this.ringMat.opacity = 0.4 + Math.sin(this.frame * 0.08) * 0.2;
-            // Face the player
             const angle = Math.atan2(this.player.pos.x - this.thoriq.group.position.x, this.player.pos.z - this.thoriq.group.position.z);
             this.thoriq.group.rotation.y = angle;
         } else if (this.isNearCake) {
             prompt.innerHTML = 'Tekan <b>E</b> untuk melihat kejutan 🎂';
+            prompt.classList.add('visible');
+            this.ringMat.opacity = 0;
+        } else if (this.isNearMading) {
+            prompt.innerHTML = 'Tekan <b>E</b> untuk melihat Mading Poto 🖼️';
             prompt.classList.add('visible');
             this.ringMat.opacity = 0;
         } else {
