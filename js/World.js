@@ -188,7 +188,7 @@ class World {
         label.position.z = 0.12;
         frame.add(label);
 
-        g.position.set(2.5, 0, 0);
+        g.position.set(5, 0, -3);
         g.lookAt(0, 0, 0); // Face the center/cake
         this.scene.add(g);
     }
@@ -265,7 +265,7 @@ class World {
         const z = (Math.random() - 0.5) * 40;
         const y = 15 + Math.random() * 10;
 
-        const count = 40;
+        const count = 25;
         const particles = [];
         const color = new THREE.Color().setHSL(Math.random(), 0.8, 0.6);
 
@@ -325,8 +325,8 @@ class World {
     }
 
     update(frame) {
-        // ... (existing heart, firework, text update remains same or integrated)
-        if (frame % 45 === 0) this.spawnLantern();
+        // Optimization: Slower spawn and limits
+        if (frame % 120 === 0 && this.lanterns.length < 15) this.spawnLantern();
 
         for (let i = this.lanterns.length - 1; i >= 0; i--) {
             const l = this.lanterns[i];
@@ -343,6 +343,10 @@ class World {
             }
         }
 
+        if (this.heartParticles.length > 40) {
+            const p = this.heartParticles.shift();
+            this.scene.remove(p);
+        }
         // Heart particles
         for (let i = this.heartParticles.length - 1; i >= 0; i--) {
             const p = this.heartParticles[i];
@@ -357,7 +361,7 @@ class World {
         }
 
         // Update Fireworks
-        if (frame % 80 === 0) this.spawnFirework();
+        if (frame % 100 === 0 && this.fireworks.length < 3) this.spawnFirework();
         for (let i = this.fireworks.length - 1; i >= 0; i--) {
             const fw = this.fireworks[i];
             let deadCount = 0;

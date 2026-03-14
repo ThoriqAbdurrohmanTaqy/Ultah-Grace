@@ -229,11 +229,11 @@ class Engine {
         const distC = Math.sqrt(dxC * dxC + dzC * dzC);
         this.isNearCake = distC < 2.0;
 
-        // Distance to Mading (2, 0, 0)
-        const dxM = this.player.pos.x - 2.5;
-        const dzM = this.player.pos.z - 0;
+        // Distance to Mading (5, 0, -3)
+        const dxM = this.player.pos.x - 5.0;
+        const dzM = this.player.pos.z - (-3.0);
         const distM = Math.sqrt(dxM * dxM + dzM * dzM);
-        this.isNearMading = distM < 2.0;
+        this.isNearMading = distM < 2.5;
 
         // Distance to Telescope (-4, 0, 2)
         const dxTe = this.player.pos.x - (-4);
