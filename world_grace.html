@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dunia Kecil untuk Grace 🌸</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Caveat:wght@400;700&display=swap');
 
     * {
       margin: 0;
@@ -366,6 +366,101 @@
       text-transform: uppercase;
     }
 
+    #photo-btn {
+      position: absolute;
+      top: 100px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: rgba(249, 180, 220, 0.15);
+      border: 1px solid rgba(249, 180, 220, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f9d4e8;
+      cursor: pointer;
+      pointer-events: all;
+      transition: 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    #photo-btn:hover {
+      background: rgba(249, 180, 220, 0.3);
+      transform: scale(1.1);
+    }
+
+    /* Polaroid Overlay */
+    #polaroid-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      backdrop-filter: blur(15px);
+    }
+
+    #polaroid-overlay.visible {
+      display: flex;
+      animation: zoomIn 0.5s ease;
+    }
+
+    #polaroid-frame {
+      background: #fdfdfd;
+      padding: 20px 20px 80px 20px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+      transform: rotate(-2deg);
+      border-radius: 4px;
+      position: relative;
+    }
+
+    #polaroid-image {
+      width: 350px;
+      height: 350px;
+      background: #eee;
+      border: 1px solid #ddd;
+      object-fit: cover;
+    }
+
+    #polaroid-caption {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #333;
+      font-family: 'Caveat', cursive;
+      font-size: 1.8rem;
+    }
+
+    #polaroid-btns {
+      display: flex;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .pol-btn {
+      padding: 12px 30px;
+      border-radius: 30px;
+      border: 1px solid #f9d4e8;
+      color: #f9d4e8;
+      cursor: pointer;
+      background: transparent;
+      transition: 0.3s;
+    }
+
+    .pol-btn.primary {
+      background: #f9d4e8;
+      color: #333;
+    }
+
+    .pol-btn:hover {
+      transform: scale(1.05);
+    }
+
     @keyframes zoomIn {
       from {
         transform: scale(0.8);
@@ -466,6 +561,7 @@
       <p>Selamat Ulang Tahun 🌸</p>
     </div>
     <div id="birthday-badge">🎂 Happy Birthday</div>
+    <div id="photo-btn" onclick="takePhoto()" title="Ambil Foto Polaroid">📸</div>
 
     <div id="controls-hint">
       <div class="hint-row">
@@ -512,6 +608,17 @@
     <div id="mading-content"></div>
     <p style="margin-top:20px; color:rgba(249,212,232,0.4); font-size:0.75rem; letter-spacing:3px;">GESER UNTUK MELIHAT
       MEMORI KITA</p>
+  </div>
+
+  <div id="polaroid-overlay">
+    <div id="polaroid-frame">
+      <img id="polaroid-image" src="" alt="Snapshot">
+      <div id="polaroid-caption">Our Beautiful Moment...</div>
+    </div>
+    <div id="polaroid-btns">
+      <button class="pol-btn" onclick="closePolaroid()">KEMBALI</button>
+      <button class="pol-btn primary" onclick="downloadPhoto()">UNDUH FOTO</button>
+    </div>
   </div>
 
   <!-- Libraries -->
@@ -639,6 +746,42 @@
 
     document.getElementById('send-btn').onclick = sendMessage;
     document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); e.stopPropagation(); };
+
+    // Photo Mode Functionality
+    function takePhoto() {
+      const game = window.game;
+      const hud = document.getElementById('hud');
+
+      // Flash effect or Hide HUD
+      hud.style.opacity = '0';
+
+      setTimeout(() => {
+        // Ensure scene is rendered before capturing
+        game.renderer.render(game.scene, game.camera);
+        const dataUrl = game.renderer.domElement.toDataURL('image/png');
+
+        const photoOverlay = document.getElementById('polaroid-overlay');
+        const photoImg = document.getElementById('polaroid-image');
+        photoImg.src = dataUrl;
+
+        photoOverlay.classList.add('visible');
+        hud.style.opacity = '1';
+        game.isOverlayVisible = true;
+      }, 100);
+    }
+
+    function closePolaroid() {
+      const game = window.game;
+      document.getElementById('polaroid-overlay').classList.remove('visible');
+      game.isOverlayVisible = false;
+    }
+
+    function downloadPhoto() {
+      const link = document.createElement('a');
+      link.download = `Memori_Grace_${new Date().getTime()}.png`;
+      link.href = document.getElementById('polaroid-image').src;
+      link.click();
+    }
   </script>
 </body>
 

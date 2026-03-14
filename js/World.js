@@ -7,7 +7,18 @@ class World {
         this.heartParticles = [];
         this.fireworks = [];
         this.floatingTexts = [];
+        this.lanterns = [];
         this.setupEnvironment();
+        this.init();
+    }
+
+    init() {
+        this.createGround();
+        this.createTrees();
+        this.createStreetLights();
+        this.createCake();
+        this.createMading();
+        this.createFloatingTexts();
     }
 
     setupEnvironment() {
@@ -263,7 +274,49 @@ class World {
         this.heartParticles.push(mesh);
     }
 
+    spawnLantern() {
+        const g = new THREE.Group();
+        const bodyGeo = new THREE.CylinderGeometry(0.18, 0.14, 0.45, 8);
+        const bodyMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.85 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        g.add(body);
+
+        const light = new THREE.PointLight(0xff8822, 1.5, 4);
+        g.add(light);
+
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 12 + Math.random() * 25;
+        g.position.set(Math.cos(angle) * radius, -1, Math.sin(angle) * radius);
+
+        g.userData = {
+            vY: 0.008 + Math.random() * 0.015,
+            phase: Math.random() * Math.PI * 2,
+            active: false
+        };
+
+        this.scene.add(g);
+        this.lanterns.push(g);
+    }
+
     update(frame) {
+        // ... (existing heart, firework, text update remains same or integrated)
+        if (frame % 45 === 0) this.spawnLantern();
+
+        for (let i = this.lanterns.length - 1; i >= 0; i--) {
+            const l = this.lanterns[i];
+            l.position.y += l.userData.vY;
+            l.position.x += Math.sin(frame * 0.01 + l.userData.phase) * 0.015;
+            l.position.z += Math.cos(frame * 0.01 + l.userData.phase) * 0.015;
+
+            // Flicker inner light
+            l.children[1].intensity = 1.0 + Math.sin(frame * 0.12 + l.userData.phase) * 0.5;
+
+            if (l.position.y > 50) {
+                this.scene.remove(l);
+                this.lanterns.splice(i, 1);
+            }
+        }
+
         // Heart particles
         for (let i = this.heartParticles.length - 1; i >= 0; i--) {
             const p = this.heartParticles[i];
