@@ -258,7 +258,7 @@ class Engine {
             prompt.classList.add('visible');
             this.ringMat.opacity = 0;
         } else if (this.isNearTelescope) {
-            prompt.innerHTML = this.isTelescopeActive ? 'Klik kiri atau tekan <b>E</b> untuk berhenti' : 'Tekan <b>E</b> untuk melihat Langit 🔭';
+            prompt.innerHTML = this.isTelescopeActive ? 'Klik kiri atau tekan <b>E</b> untuk berhenti' : 'Tekan <b>E</b> untuk melihat Bintang 🔭';
             prompt.classList.add('visible');
             this.ringMat.opacity = 0;
         } else {
@@ -278,7 +278,7 @@ class Engine {
                 foundLabel = true;
             }
         });
-        if (!foundLabel && !this.isNearThoriq && !this.isNearCake) {
+        if (!foundLabel && !this.isNearThoriq && !this.isNearCake && !this.isNearMading && !this.isNearTelescope) {
             labelEl.classList.remove('visible');
         }
     }
