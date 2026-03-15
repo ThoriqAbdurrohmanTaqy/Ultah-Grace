@@ -8,6 +8,7 @@ class World {
         this.fireworks = [];
         this.floatingTexts = [];
         this.lanterns = [];
+        this.skyParticles = null;
         this.setupEnvironment();
     }
 
@@ -74,6 +75,7 @@ class World {
         this.createMading();
         this.createTelescope();
         this.createFloatingTexts();
+        this.createSkyShow();
     }
 
     createStars() {
@@ -250,6 +252,84 @@ class World {
         this.telescope = group;
     }
 
+    createSkyShow() {
+        const count = 500;
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(count * 3);
+        const targetPos = new Float32Array(count * 3);
+
+        for (let i = 0; i < count; i++) {
+            const r = 60;
+            const th = Math.random() * Math.PI * 2;
+            const ph = Math.random() * Math.PI;
+            pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+            pos[i * 3 + 1] = 40 + r * Math.cos(ph);
+            pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+            targetPos[i * 3] = pos[i * 3];
+            targetPos[i * 3 + 1] = pos[i * 3 + 1];
+            targetPos[i * 3 + 2] = pos[i * 3 + 2];
+        }
+
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        this.skyParticles = new THREE.Points(geo, mat);
+        this.skyParticles.userData = { targetPos, state: 0, timer: 0 };
+        this.scene.add(this.skyParticles);
+    }
+
+    updateSkyShow(frame) {
+        if (!this.skyParticles) return;
+        const ud = this.skyParticles.userData;
+        ud.timer++;
+
+        // State 0: Heart (5s = ~300 frames), State 1: "I LOVE YOU" (10s = ~600 frames)
+        if (ud.state === 0 && ud.timer > 300) { ud.state = 1; ud.timer = 0; this.setSkyTarget('text'); }
+        if (ud.state === 1 && ud.timer > 600) { ud.state = 0; ud.timer = 0; this.setSkyTarget('heart'); }
+        if (frame === 1) this.setSkyTarget('heart');
+
+        const posAttr = this.skyParticles.geometry.attributes.position;
+        for (let i = 0; i < posAttr.count; i++) {
+            posAttr.array[i * 3] += (ud.targetPos[i * 3] - posAttr.array[i * 3]) * 0.05;
+            posAttr.array[i * 3 + 1] += (ud.targetPos[i * 3 + 1] - posAttr.array[i * 3 + 1]) * 0.05;
+            posAttr.array[i * 3 + 2] += (ud.targetPos[i * 3 + 2] - posAttr.array[i * 3 + 2]) * 0.05;
+        }
+        posAttr.needsUpdate = true;
+    }
+
+    setSkyTarget(type) {
+        const ud = this.skyParticles.userData;
+        const count = ud.targetPos.length / 3;
+
+        if (type === 'heart') {
+            for (let i = 0; i < count; i++) {
+                const t = (i / count) * Math.PI * 2;
+                // Heart formula
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+                ud.targetPos[i * 3] = x * 0.6;
+                ud.targetPos[i * 3 + 1] = 35 + y * 0.6;
+                ud.targetPos[i * 3 + 2] = -30 + (Math.random() - 0.5) * 5;
+            }
+        } else {
+            // "I ❤️ U" simplified text pattern or random cluster
+            for (let i = 0; i < count; i++) {
+                const sector = i % 3;
+                if (sector === 0) { // I
+                    ud.targetPos[i * 3] = -15 + (Math.random() - 0.5) * 2;
+                    ud.targetPos[i * 3 + 1] = 30 + (i % 20);
+                } else if (sector === 1) { // LOVE (simplified box)
+                    ud.targetPos[i * 3] = (Math.random() - 0.5) * 10;
+                    ud.targetPos[i * 3 + 1] = 30 + (Math.random() - 0.5) * 10;
+                } else { // U
+                    const a = (i % 20) / 20 * Math.PI;
+                    ud.targetPos[i * 3] = 15 + Math.cos(a + Math.PI) * 10;
+                    ud.targetPos[i * 3 + 1] = 40 + Math.sin(a + Math.PI) * 10;
+                }
+                ud.targetPos[i * 3 + 2] = -30 + (Math.random() - 0.5) * 5;
+            }
+        }
+    }
+
     createFloatingTexts() {
         const texts = [
             "I Love You ❤️",
@@ -348,6 +428,7 @@ class World {
     }
 
     update(frame) {
+        this.updateSkyShow(frame);
         // Optimization: Slower spawn and limits
         if (frame % 120 === 0 && this.lanterns.length < 15) this.spawnLantern();
 
