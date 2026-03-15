@@ -52,6 +52,10 @@ class World {
         thoriqLight.position.set(0, 2, 1.6);
         this.scene.add(thoriqLight);
 
+        const telescopeLight = new THREE.PointLight(0xcfb53b, 2.5, 8);
+        telescopeLight.position.set(-4, 2, 2);
+        this.scene.add(telescopeLight);
+
         // Ground
         const ground = new THREE.Mesh(
             new THREE.CircleGeometry(70, 72),
@@ -68,6 +72,7 @@ class World {
         this.createPath();
         this.createCake();
         this.createMading();
+        this.createTelescope();
         this.createFloatingTexts();
     }
 
