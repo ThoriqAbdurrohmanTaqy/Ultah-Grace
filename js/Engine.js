@@ -178,26 +178,33 @@ class Engine {
     }
 
     updateCamera() {
-        if (this.isTelescopeActive) {
-            // Telescope View: Locked on sky, zoomed in
-            this.camera.fov = 30; // Zoom in
-            this.camera.updateProjectionMatrix();
-
-            this.camera.position.set(this.player.pos.x - 0.5, this.player.pos.y + 1.8, this.player.pos.z + 0.5);
-            const lukAt = new THREE.Vector3(this.player.pos.x, this.player.pos.y + 10, this.player.pos.z);
-            this.camera.lookAt(lukAt);
-            return;
-        }
-
-        this.camera.fov = 65; // Normal View
-        this.camera.updateProjectionMatrix();
-
         // Keyboard Camera Rotation (Arrow Keys)
-        const rotSpeed = 0.03;
+        const rotSpeed = this.isTelescopeActive ? 0.015 : 0.03;
         if (this.keys['arrowleft']) this.camState.angleH -= rotSpeed;
         if (this.keys['arrowright']) this.camState.angleH += rotSpeed;
         if (this.keys['arrowup']) this.camState.angleV -= rotSpeed;
         if (this.keys['arrowdown']) this.camState.angleV += rotSpeed;
+
+        if (this.isTelescopeActive) {
+            // Telescope View: Panoramic first-person sky view
+            this.camera.fov = 22; // Deeper zoom
+            this.camera.updateProjectionMatrix();
+
+            // Lock position at telescope eyepiece
+            this.camera.position.set(-4.0, 1.4, 2.0);
+
+            // Panning logic: Vertical restricted to looking up
+            const pitch = Math.max(0.1, Math.min(1.4, this.camState.angleV + 0.8));
+            const yaw = this.camState.angleH;
+
+            const lookAtTarget = new THREE.Vector3(
+                this.camera.position.x + Math.sin(yaw) * Math.cos(pitch),
+                this.camera.position.y + Math.sin(pitch),
+                this.camera.position.z + Math.cos(yaw) * Math.cos(pitch)
+            );
+            this.camera.lookAt(lookAtTarget);
+            return;
+        }
 
         // Vertical Limit: Allow looking higher at the sky
         this.camState.angleV = Math.max(-1.1, Math.min(1.2, this.camState.angleV));

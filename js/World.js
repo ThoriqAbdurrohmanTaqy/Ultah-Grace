@@ -253,7 +253,7 @@ class World {
     }
 
     createSkyShow() {
-        const count = 500;
+        const count = 1500;
         const geo = new THREE.BufferGeometry();
         const pos = new Float32Array(count * 3);
         const targetPos = new Float32Array(count * 3);
@@ -271,7 +271,7 @@ class World {
         }
 
         geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, sizeAttenuation: true });
         this.skyParticles = new THREE.Points(geo, mat);
         this.skyParticles.userData = { targetPos, state: 0, timer: 0 };
         this.scene.add(this.skyParticles);
@@ -306,26 +306,28 @@ class World {
                 // Heart formula
                 const x = 16 * Math.pow(Math.sin(t), 3);
                 const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-                ud.targetPos[i * 3] = x * 0.6;
-                ud.targetPos[i * 3 + 1] = 35 + y * 0.6;
-                ud.targetPos[i * 3 + 2] = -30 + (Math.random() - 0.5) * 5;
+                ud.targetPos[i * 3] = -4 + x * 1.5;
+                ud.targetPos[i * 3 + 1] = 45 + y * 1.5;
+                ud.targetPos[i * 3 + 2] = 2 + (Math.random() - 0.5) * 5;
             }
         } else {
-            // "I ❤️ U" simplified text pattern or random cluster
+            // "I LOVE YOU" - Perfectly centered at telescope zenith
             for (let i = 0; i < count; i++) {
-                const sector = i % 3;
-                if (sector === 0) { // I
-                    ud.targetPos[i * 3] = -15 + (Math.random() - 0.5) * 2;
-                    ud.targetPos[i * 3 + 1] = 30 + (i % 20);
-                } else if (sector === 1) { // LOVE (simplified box)
-                    ud.targetPos[i * 3] = (Math.random() - 0.5) * 10;
-                    ud.targetPos[i * 3 + 1] = 30 + (Math.random() - 0.5) * 10;
+                let tx = 0, ty = 0;
+                if (i < count * 0.15) { // I
+                    tx = -15; ty = -5 + (i / (count * 0.15)) * 15;
+                } else if (i < count * 0.6) { // LOVE (Circle Heart)
+                    const a = (i / (count * 0.45)) * Math.PI * 2;
+                    tx = Math.sin(a) * 8;
+                    ty = Math.cos(a) * 8;
                 } else { // U
-                    const a = (i % 20) / 20 * Math.PI;
-                    ud.targetPos[i * 3] = 15 + Math.cos(a + Math.PI) * 10;
-                    ud.targetPos[i * 3 + 1] = 40 + Math.sin(a + Math.PI) * 10;
+                    const a = (i / (count * 0.4)) * Math.PI;
+                    tx = 15 + Math.cos(a + Math.PI) * 7;
+                    ty = 5 + Math.sin(a + Math.PI) * 10;
                 }
-                ud.targetPos[i * 3 + 2] = -30 + (Math.random() - 0.5) * 5;
+                ud.targetPos[i * 3] = -4 + tx * 1.2;
+                ud.targetPos[i * 3 + 1] = 45 + ty * 1.2;
+                ud.targetPos[i * 3 + 2] = 2 + (Math.random() - 0.5) * 5;
             }
         }
     }
