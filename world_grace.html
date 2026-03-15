@@ -664,7 +664,7 @@
 
   <script>
     // Initialize the Game Engine
-    const game = new Engine();
+    window.game = new Engine();
 
     // Interaction & Chat Logic (Kept here for easy editing)
     const npcLines = [
@@ -675,16 +675,17 @@
     let lineIdx = 0;
 
     window.addEventListener('keydown', e => {
-      const game = window.game;
+      const g = window.game;
+      if (!g) return;
       if (e.key.toLowerCase() === 'e') {
         // Priority 0: Close Telescope
-        if (game.isTelescopeActive) {
+        if (g.isTelescopeActive) {
           toggleTelescope(false);
           return;
         }
 
         // Priority 1: Closing overlays
-        if (game.isOverlayVisible) {
+        if (g.isOverlayVisible) {
           toggleBirthdayOverlay(false);
           toggleMadingOverlay(false);
           closePolaroid();
@@ -692,13 +693,13 @@
         }
 
         // Priority 2: Telescope
-        if (game.isNearTelescope) {
+        if (g.isNearTelescope) {
           toggleTelescope(true);
           return;
         }
 
         // Priority 3: Mading
-        if (game.isNearMading) {
+        if (g.isNearMading) {
           toggleMadingOverlay(true);
           return;
         }
@@ -796,8 +797,9 @@
     document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); e.stopPropagation(); };
 
     function toggleTelescope(show) {
-      const game = window.game;
-      game.isTelescopeActive = show;
+      const g = window.game;
+      if (!g) return;
+      g.isTelescopeActive = show;
       const lens = document.getElementById('telescope-lens');
       if (show) {
         lens.classList.add('visible');

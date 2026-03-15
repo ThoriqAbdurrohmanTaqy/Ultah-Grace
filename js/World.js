@@ -19,20 +19,38 @@ class World {
         this.scene.background = new THREE.Color(0x0a0612);
 
         // Lights
-        this.scene.add(new THREE.AmbientLight(0x2a1035, 1.2));
+        this.scene.add(new THREE.AmbientLight(0x2a1035, 2.4));
 
         const moonLight = new THREE.DirectionalLight(0xd4b8ff, 0.9);
         moonLight.position.set(10, 25, 10);
         moonLight.castShadow = true;
         this.scene.add(moonLight);
 
-        this.pinkLight1 = new THREE.PointLight(0xff6eb4, 2, 30);
-        this.pinkLight1.position.set(5, 3, 5);
+        this.pinkLight1 = new THREE.PointLight(0xff6eb4, 4, 40);
+        this.pinkLight1.position.set(5, 5, 5);
         this.scene.add(this.pinkLight1);
 
-        this.pinkLight2 = new THREE.PointLight(0xb06aff, 1.5, 25);
-        this.pinkLight2.position.set(-8, 4, -8);
+        this.pinkLight2 = new THREE.PointLight(0xb06aff, 3, 35);
+        this.pinkLight2.position.set(-8, 6, -8);
         this.scene.add(this.pinkLight2);
+
+        // Center Warm Glow
+        const centerLight = new THREE.PointLight(0xffaa44, 2, 20);
+        centerLight.position.set(0, 2, 0);
+        this.scene.add(centerLight);
+
+        // Interaction Point Lights
+        const cakeLight = new THREE.PointLight(0xfff0dd, 2.5, 10);
+        cakeLight.position.set(0, 1.5, 0);
+        this.scene.add(cakeLight);
+
+        const madingLight = new THREE.PointLight(0xff85c0, 2.5, 12);
+        madingLight.position.set(5, 2, -3);
+        this.scene.add(madingLight);
+
+        const thoriqLight = new THREE.PointLight(0xb06aff, 2, 10);
+        thoriqLight.position.set(0, 2, 1.6);
+        this.scene.add(thoriqLight);
 
         // Ground
         const ground = new THREE.Mesh(

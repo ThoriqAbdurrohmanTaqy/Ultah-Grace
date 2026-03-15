@@ -1,0 +1,4 @@
+{
+    "tfa.dashboard.includeSecondaryModels": true,
+    "tfa.cache.autoClean": true
+}
