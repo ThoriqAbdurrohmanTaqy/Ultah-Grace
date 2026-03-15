@@ -615,6 +615,10 @@
         <div class="key">E</div>
         <div class="hint-label">Interaksi</div>
       </div>
+      <div class="hint-row">
+        <div class="key">F</div>
+        <div class="hint-label">Ambil Foto</div>
+      </div>
     </div>
 
     <div id="npc-bubble">
@@ -719,6 +723,10 @@
           lineIdx++;
           game.world.spawnHeart(0, 1.6);
         }
+      }
+      
+      if (e.key.toLowerCase() === 'f') {
+        takePhoto();
       }
 
       if (e.key === 'Escape') {
